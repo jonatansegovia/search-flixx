@@ -72,6 +72,7 @@ async function displayMovieDetails() {
   const id = url.match(/id=(\d+)/)[1];
 
   const {
+    backdrop_path,
     budget,
     genres,
     homepage,
@@ -85,6 +86,9 @@ async function displayMovieDetails() {
     title,
     vote_average,
   } = await fetchAPIData(`movie/${id}`);
+
+  // Overlay for background image
+  displayBackgroundImage('movie', backdrop_path);
 
   const div = document.createElement('div');
 
@@ -145,6 +149,17 @@ async function displayMovieDetails() {
 
   const container = document.getElementById('movie-details');
   container.appendChild(div);
+}
+
+// Display backdrop on details pages
+function displayBackgroundImage(type, backgroundPath) {
+  const container = type === 'movie' ? '#movie-details' : '#show-details';
+
+  const overlayDiv = document.createElement('div');
+  overlayDiv.classList.add('overlay');
+  overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${backgroundPath})`;
+
+  document.querySelector(container).appendChild(overlayDiv);
 }
 
 // Fetch data from TMBD API
