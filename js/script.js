@@ -98,6 +98,16 @@ async function displayMovieDetails() {
     )
     .join('');
 
+  const hasHomePage = homepage
+    ? `<a href="${homepage}" target="_blank" class="btn">Visit Movie Homepage</a>`
+    : '<button disabled class="btn">No Movie Homepage</button>';
+
+  const budgetNum = budget ? `$${Number(budget).toLocaleString()}` : 'No Info';
+
+  const revenueNum = revenue
+    ? `$${Number(revenue).toLocaleString()}`
+    : 'No Info';
+
   div.innerHTML = `
   <div class="details-top">
    <div>
@@ -117,22 +127,14 @@ async function displayMovieDetails() {
     <p>${overview}</p>
     <h5>Genres</h5>
     <ul class="list-group">${genresLi}</ul>
-    ${
-      homepage
-        ? `<a href="${homepage}" target="_blank" class="btn">Visit Movie Homepage</a>`
-        : '<button disabled class="btn">No Movie Homepage</button>'
-    }
+    ${hasHomePage}
    </div>
   </div>
   <div class="details-bottom">
       <h2>Movie Info</h2>
       <ul>
-        <li><span class="text-secondary">Budget: </span>${
-          budget ? `$${Number(budget).toLocaleString()}` : 'No Info'
-        }</li>
-        <li><span class="text-secondary">Revenue: </span>${
-          revenue ? `$${Number(revenue).toLocaleString()}` : 'No Info'
-        }</li>
+        <li><span class="text-secondary">Budget: </span>${budgetNum}</li>
+        <li><span class="text-secondary">Revenue: </span>${revenueNum}</li>
         <li><span class="text-secondary">Runtime: </span>${runtime} minutes</li>
         <li><span class="text-secondary">Status: </span>${status}</li>
       </ul>
