@@ -66,6 +66,85 @@ async function displayPopularShows() {
   });
 }
 
+// Display Movie Details
+async function displayMovieDetails() {
+  const url = window.location.href;
+  const id = url.match(/id=(\d+)/)[1];
+
+  const {
+    budget,
+    genres,
+    homepage,
+    overview,
+    poster_path,
+    production_companies,
+    release_date,
+    revenue,
+    runtime,
+    status,
+    title,
+    vote_average,
+  } = await fetchAPIData(`movie/${id}`);
+
+  const div = document.createElement('div');
+
+  // Make genres LI items
+  const genresLi = genres.map((genre) => `<li>${genre.name}</li>`).join('');
+
+  // Make companies string
+  const companies = production_companies
+    .map((companie, idx, arr) =>
+      idx === arr.length - 1 ? `${companie.name}.` : `${companie.name}, `
+    )
+    .join('');
+
+  div.innerHTML = `
+  <div class="details-top">
+   <div>
+    <img src="${
+      poster_path
+        ? `https://image.tmdb.org/t/p/w500${poster_path}`
+        : '../images/no-image.jpg'
+    }" class="card-img-top" alt="${title}" />
+   </div>
+   <div>
+    <h2>${title}</h2>
+    <p>
+      <i class="fas fa-star text-primary"></i>
+      ${Math.round(vote_average)} / 10
+    </p>
+    <p class="text-muted">Release Date: ${release_date}</p>
+    <p>${overview}</p>
+    <h5>Genres</h5>
+    <ul class="list-group">${genresLi}</ul>
+    ${
+      homepage
+        ? `<a href="${homepage}" target="_blank" class="btn">Visit Movie Homepage</a>`
+        : '<button disabled class="btn">No Movie Homepage</button>'
+    }
+   </div>
+  </div>
+  <div class="details-bottom">
+      <h2>Movie Info</h2>
+      <ul>
+        <li><span class="text-secondary">Budget: </span>${
+          budget ? `$${Number(budget).toLocaleString()}` : 'No Info'
+        }</li>
+        <li><span class="text-secondary">Revenue: </span>${
+          revenue ? `$${Number(revenue).toLocaleString()}` : 'No Info'
+        }</li>
+        <li><span class="text-secondary">Runtime: </span>${runtime} minutes</li>
+        <li><span class="text-secondary">Status: </span>${status}</li>
+      </ul>
+      <h4>Production Companies</h4>
+      <div class="list-group">${companies}</div>
+  </div>
+  `;
+
+  const container = document.getElementById('movie-details');
+  container.appendChild(div);
+}
+
 // Fetch data from TMBD API
 async function fetchAPIData(endpoint) {
   showSpinner();
@@ -112,7 +191,7 @@ function init() {
       displayPopularShows();
       break;
     case '/movie-details.html':
-      console.log('Movie details');
+      displayMovieDetails();
       break;
     case '/tv-details.html':
       console.log('Tv details');
