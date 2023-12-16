@@ -68,7 +68,7 @@ async function displayPopularShows() {
 
 // Display Movie Details
 async function displayMovieDetails() {
-  const url = window.location.href;
+  const url = window.location.search;
   const id = url.match(/id=(\d+)/)[1];
 
   const {
@@ -111,7 +111,7 @@ async function displayMovieDetails() {
     <h2>${title}</h2>
     <p>
       <i class="fas fa-star text-primary"></i>
-      ${Math.round(vote_average)} / 10
+      ${vote_average.toFixed(1)} / 10
     </p>
     <p class="text-muted">Release Date: ${release_date}</p>
     <p>${overview}</p>
