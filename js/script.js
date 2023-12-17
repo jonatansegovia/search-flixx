@@ -1,4 +1,11 @@
-const global = { currentPage: window.location.pathname };
+const global = {
+  currentPage: window.location.pathname,
+  search: { term: '', type: '', page: 1, totalPages: 1 },
+  api: {
+    apiKey: '2cd1686cd69c34e4dc8772cc7302ebec',
+    apiUrl: 'https://api.themoviedb.org/3/',
+  },
+};
 
 // Display 20 more popular movies
 async function displayPopularMovies() {
@@ -238,6 +245,23 @@ function displayBackgroundImage(type, backgroundPath) {
   document.querySelector(container).appendChild(overlayDiv);
 }
 
+// Search Movies / Shows
+async function search() {
+  const url = window.location.search;
+  const [, type, searchTerm] = url.match(/type=(.*?)&search-term=(.*?)$/);
+
+  global.search.type = type;
+  global.search.term = searchTerm;
+
+  if (global.search.term !== '' && global.search.term !== null) {
+    // @todo - make request and display results
+    const results = await searchAPIData();
+    console.log(results);
+  } else {
+    showAlert('Please enter a search term');
+  }
+}
+
 // Display Slider Movies
 async function displaySlider() {
   const { results } = await fetchAPIData('movie/now_playing');
@@ -290,10 +314,29 @@ function initSwiper() {
 async function fetchAPIData(endpoint) {
   showSpinner();
 
-  const API_URL = 'https://api.themoviedb.org/3/';
-  const API_KEY = '2cd1686cd69c34e4dc8772cc7302ebec';
+  const { apiUrl } = global.api;
+  const { apiKey } = global.api;
 
-  const response = await fetch(`${API_URL}${endpoint}?api_key=${API_KEY}`);
+  const response = await fetch(`${apiUrl}${endpoint}?api_key=${apiKey}`);
+  const data = await response.json();
+
+  hideSpinner();
+
+  return data;
+}
+
+// Make request to Search
+async function searchAPIData() {
+  showSpinner();
+
+  const { apiUrl } = global.api;
+  const { apiKey } = global.api;
+  const { type } = global.search;
+  const { term } = global.search;
+
+  const response = await fetch(
+    `${apiUrl}search/${type}?api_key=${apiKey}&query=${term}`
+  );
   const data = await response.json();
 
   hideSpinner();
@@ -321,6 +364,20 @@ function highLightActiveLink() {
   });
 }
 
+// Show Alert
+function showAlert(message, className) {
+  const container = document.getElementById('alert');
+  const alertEl = document.createElement('div');
+  alertEl.classList.add('alert', className);
+  alertEl.appendChild(document.createTextNode(message));
+
+  container.appendChild(alertEl);
+
+  setTimeout(() => {
+    container.removeChild(alertEl);
+  }, 5000);
+}
+
 //Init app
 function init() {
   switch (global.currentPage) {
@@ -339,7 +396,7 @@ function init() {
       displayShowDetails();
       break;
     case '/search.html':
-      console.log('Search');
+      search();
       break;
   }
 
