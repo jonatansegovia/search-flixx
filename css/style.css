@@ -340,11 +340,24 @@ section h2 {
 }
 
 /* Alert */
+@keyframes hearthBeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .alert {
   background: red;
   padding: 10px 20px;
   margin-bottom: 20px;
   border-radius: 5px;
+  animation: hearthBeat 2s infinite;
 }
 
 .alert-success {
