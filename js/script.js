@@ -93,7 +93,7 @@ async function displayMovieDetails() {
   const div = document.createElement('div');
 
   // Make genres LI items
-  const genresLi = genres.map((genre) => `<li>${genre.name}</li>`).join('');
+  const genresItem = genres.map((genre) => `<li>${genre.name}</li>`).join('');
 
   // Make companies string
   const companies = production_companies
@@ -125,12 +125,12 @@ async function displayMovieDetails() {
     <h2>${title}</h2>
     <p>
       <i class="fas fa-star text-primary"></i>
-      ${vote_average.toFixed(1)} / 10
+      ${vote_average ? `${vote_average.toFixed(1)} / 10` : 'No Average yet'}
     </p>
     <p class="text-muted">Release Date: ${release_date}</p>
-    <p>${overview}</p>
+    <p>${overview ? overview : 'No Info'}</p>
     <h5>Genres</h5>
-    <ul class="list-group">${genresLi}</ul>
+    <ul class="list-group">${genresItem}</ul>
     ${hasHomePage}
    </div>
   </div>
@@ -148,6 +148,82 @@ async function displayMovieDetails() {
   `;
 
   const container = document.getElementById('movie-details');
+  container.appendChild(div);
+}
+
+async function displayShowDetails() {
+  const url = window.location.search;
+  const id = url.match(/id=(\d+)/)[1];
+
+  const {
+    backdrop_path,
+    first_air_date,
+    genres,
+    homepage,
+    last_air_date,
+    name,
+    number_of_episodes,
+    overview,
+    poster_path,
+    production_companies,
+    status,
+    vote_average,
+  } = await fetchAPIData(`tv/${id}`);
+
+  // Overlay for background image
+  displayBackgroundImage('tv', backdrop_path);
+
+  const div = document.createElement('div');
+
+  // Make genres LI items
+  const genresItem = genres.map((genre) => `<li>${genre.name}</li>`).join('');
+
+  // Make companies string
+  const companies = production_companies
+    .map((companie, idx, arr) =>
+      idx === arr.length - 1 ? `${companie.name}.` : `${companie.name}, `
+    )
+    .join('');
+
+  const hasHomePage = homepage
+    ? `<a href="${homepage}" target="_blank" class="btn">Visit Movie Homepage</a>`
+    : '<button disabled class="btn">No Movie Homepage</button>';
+
+  div.innerHTML = `
+  <div class="details-top">
+   <div>
+    <img src="${
+      poster_path
+        ? `https://image.tmdb.org/t/p/w500${poster_path}`
+        : '../images/no-image.jpg'
+    }" class="card-img-top" alt="${name}" />
+   </div>
+   <div>
+    <h2>${name}</h2>
+    <p>
+      <i class="fas fa-star text-primary"></i>
+      ${vote_average ? `${vote_average.toFixed(1)} / 10` : 'No Average yet'}
+    </p>
+    <p class="text-muted">Release Date: ${first_air_date}</p>
+    <p>${overview ? overview : 'No Info'}</p>
+    <h5>Genres</h5>
+    <ul class="list-group">${genresItem}</ul>
+    ${hasHomePage}
+   </div>
+  </div>
+  <div class="details-bottom">
+    <h2>Show Info</h2>
+    <ul>
+      <li><span class="text-secondary">Number Of Episodes: </span>${number_of_episodes}</li>
+      <li><span class="text-secondary">Last Episode To Air: </span>${last_air_date}</li>
+      <li><span class="text-secondary">Status: </span>${status}</li>
+    </ul>
+    <h4>Production Companies</h4>
+    <div class="list-group">${companies}</div>
+  </div>
+  `;
+
+  const container = document.getElementById('show-details');
   container.appendChild(div);
 }
 
@@ -211,7 +287,7 @@ function init() {
       displayMovieDetails();
       break;
     case '/tv-details.html':
-      console.log('Tv details');
+      displayShowDetails();
       break;
     case '/search.html':
       console.log('Search');
