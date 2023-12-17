@@ -246,10 +246,14 @@ function displayBackgroundImage(type, backgroundPath) {
 }
 
 function displaySearchResults(results) {
+  const heading = document.querySelector('#search-results-heading');
+  const container = document.querySelector('#search-results');
+  const paginationEl = document.querySelector('#pagination');
+
   // Clear previous results
-  document.querySelector('#search-results').innerHTML = '';
-  document.querySelector('#search-results-heading').innerHTML = '';
-  document.querySelector('#pagination').innerHTML = '';
+  container.innerHTML = '';
+  heading.innerHTML = '';
+  paginationEl.innerHTML = '';
 
   results.forEach(
     ({
@@ -288,13 +292,51 @@ function displaySearchResults(results) {
           </div>
         `;
 
-      document.querySelector('#search-results-heading').innerHTML = `
+      heading.innerHTML = `
               <h2>${results.length} of ${global.search.totalResults} Results for ${global.search.term}</h2>
     `;
 
-      document.querySelector('#search-results').appendChild(div);
+      container.appendChild(div);
     }
   );
+
+  displayPagination();
+}
+
+// Create and Display Pagination for Search
+function displayPagination() {
+  let { page, totalPages } = global.search;
+  const container = document.getElementById('pagination');
+
+  const div = document.createElement('div');
+  div.classList.add('pagination');
+
+  const isFirstPage = page === 1 && 'disabled="true"';
+  const isLastPage = totalPages === page && 'disabled="true"';
+
+  div.innerHTML = `
+  <button class="btn btn-primary" id="prev" ${isFirstPage}>Prev</button>
+  <button class="btn btn-primary" id="next" ${isLastPage}>Next</button>
+  <div class="page-counter">Page ${page} of ${totalPages}</div>`;
+
+  container.appendChild(div);
+
+  const nextButton = document.getElementById('next');
+  const prevButton = document.getElementById('prev');
+
+  // Next page
+  nextButton.addEventListener('click', async () => {
+    global.search.page++;
+    const { results } = await searchAPIData();
+    displaySearchResults(results);
+  });
+
+  // Prev page
+  prevButton.addEventListener('click', async () => {
+    global.search.page--;
+    const { results } = await searchAPIData();
+    displaySearchResults(results);
+  });
 }
 
 // Search Movies / Shows
@@ -307,7 +349,11 @@ async function search() {
 
   if (global.search.term !== '' && global.search.term !== null) {
     // @todo - make request and display results
-    const { results, total_pages, page } = await searchAPIData();
+    const { page, results, total_pages, total_results } = await searchAPIData();
+
+    global.search.page = page;
+    global.search.totalPages = total_pages;
+    global.search.totalResults = total_results;
 
     if (results.length === 0) {
       showAlert('There is nothing to show', 'warning');
@@ -387,13 +433,11 @@ async function fetchAPIData(endpoint) {
 async function searchAPIData() {
   showSpinner();
 
-  const { apiUrl } = global.api;
-  const { apiKey } = global.api;
-  const { type } = global.search;
-  const { term } = global.search;
+  const { apiKey, apiUrl } = global.api;
+  const { term, type, page } = global.search;
 
   const response = await fetch(
-    `${apiUrl}search/${type}?api_key=${apiKey}&query=${term}`
+    `${apiUrl}search/${type}?api_key=${apiKey}&query=${term}&page=${page}`
   );
   const data = await response.json();
 
