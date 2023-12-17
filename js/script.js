@@ -1,6 +1,6 @@
 const global = {
   currentPage: window.location.pathname,
-  search: { term: '', type: '', page: 1, totalPages: 1 },
+  search: { term: '', type: '', page: 1, totalPages: 1, totalResults: 0 },
   api: {
     apiKey: '2cd1686cd69c34e4dc8772cc7302ebec',
     apiUrl: 'https://api.themoviedb.org/3/',
@@ -20,7 +20,7 @@ async function displayPopularMovies() {
             <img
               src="${
                 poster_path
-                  ? `https://image.tmdb.org/t/p/w500${poster_path}`
+                  ? `https://image.tmdb.org/t/p/w500/${poster_path}`
                   : '../images/no-image.jpg'
               }"
               class="card-img-top"
@@ -53,7 +53,7 @@ async function displayPopularShows() {
             <img
               src="${
                 poster_path
-                  ? `https://image.tmdb.org/t/p/w500${poster_path}`
+                  ? `https://image.tmdb.org/t/p/w500/${poster_path}`
                   : '../images/no-image.jpg'
               }"
               class="card-img-top"
@@ -124,7 +124,7 @@ async function displayMovieDetails() {
    <div>
     <img src="${
       poster_path
-        ? `https://image.tmdb.org/t/p/w500${poster_path}`
+        ? `https://image.tmdb.org/t/p/w500/${poster_path}`
         : '../images/no-image.jpg'
     }" class="card-img-top" alt="${title}" />
    </div>
@@ -201,7 +201,7 @@ async function displayShowDetails() {
    <div>
     <img src="${
       poster_path
-        ? `https://image.tmdb.org/t/p/w500${poster_path}`
+        ? `https://image.tmdb.org/t/p/w500/${poster_path}`
         : '../images/no-image.jpg'
     }" class="card-img-top" alt="${name}" />
    </div>
@@ -245,6 +245,58 @@ function displayBackgroundImage(type, backgroundPath) {
   document.querySelector(container).appendChild(overlayDiv);
 }
 
+function displaySearchResults(results) {
+  // Clear previous results
+  document.querySelector('#search-results').innerHTML = '';
+  document.querySelector('#search-results-heading').innerHTML = '';
+  document.querySelector('#pagination').innerHTML = '';
+
+  results.forEach(
+    ({
+      first_air_date,
+      id,
+      original_name,
+      poster_path,
+      release_date,
+      title,
+      name,
+    }) => {
+      const div = document.createElement('div');
+      div.classList.add('card');
+
+      div.innerHTML = `
+          <a href="${global.search.type}-details.html?id=${id}">
+            <img
+              src="${
+                poster_path
+                  ? `https://image.tmdb.org/t/p/w500/${poster_path}`
+                  : '../images/no-image.jpg'
+              }"
+              class="card-img-top"
+              alt="${original_name}"
+            />
+          </a>
+          <div class="card-body">
+            <h5 class="card-title">${
+              global.search.type === 'movie' ? title : name
+            }</h5>
+            <p class="card-text">
+              <small class="text-muted">Release: ${
+                global.search.type === 'movie' ? release_date : first_air_date
+              }</small>
+            </p>
+          </div>
+        `;
+
+      document.querySelector('#search-results-heading').innerHTML = `
+              <h2>${results.length} of ${global.search.totalResults} Results for ${global.search.term}</h2>
+    `;
+
+      document.querySelector('#search-results').appendChild(div);
+    }
+  );
+}
+
 // Search Movies / Shows
 async function search() {
   const url = window.location.search;
@@ -255,8 +307,14 @@ async function search() {
 
   if (global.search.term !== '' && global.search.term !== null) {
     // @todo - make request and display results
-    const results = await searchAPIData();
-    console.log(results);
+    const { results, total_pages, page } = await searchAPIData();
+
+    if (results.length === 0) {
+      showAlert('There is nothing to show', 'warning');
+      return;
+    }
+
+    displaySearchResults(results);
   } else {
     showAlert('Please enter a search term');
   }
@@ -266,16 +324,16 @@ async function search() {
 async function displaySlider() {
   const { results } = await fetchAPIData('movie/now_playing');
 
-  results.forEach((movie) => {
+  results.forEach(({ id, poster_path, title, vote_average }) => {
     const div = document.createElement('div');
     div.classList.add('swiper-slide');
 
     div.innerHTML = `
-      <a href="movie-details.html?id=${movie.id}">
-        <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" />
+      <a href="movie-details.html?id=${id}">
+        <img src="https://image.tmdb.org/t/p/w500/${poster_path}" alt="${title}" />
       </a>
       <h4 class="swiper-rating">
-        <i class="fas fa-star text-secondary"></i> ${movie.vote_average} / 10
+        <i class="fas fa-star text-secondary"></i> ${vote_average} / 10
       </h4>
     `;
 
@@ -365,7 +423,7 @@ function highLightActiveLink() {
 }
 
 // Show Alert
-function showAlert(message, className) {
+function showAlert(message, className = 'error') {
   const container = document.getElementById('alert');
   const alertEl = document.createElement('div');
   alertEl.classList.add('alert', className);
