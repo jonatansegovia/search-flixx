@@ -353,17 +353,21 @@ section h2 {
 }
 
 .alert {
-  background: red;
   padding: 10px 20px;
   margin-bottom: 20px;
   border-radius: 5px;
   animation: hearthBeat 2s infinite;
 }
 
-.alert-success {
+.success {
   background: green;
 }
 
-.alert-error {
+.error {
   background: red;
+}
+
+.warning {
+  background: #f1c40f;
+  color: #000;
 }
